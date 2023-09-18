@@ -16,7 +16,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
     const navigate = useNavigate();
 
     const checkAuth = async () => {
-      console.log("Check")
+      console.log("Check");
       if (!accessToken) {
         navigate("/");
         return;
@@ -26,19 +26,16 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
       const expirationTimeInSeconds = decodedAccessToken.exp;
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-      const tokenExpiryThreshold = 100;
       const timeDifference = expirationTimeInSeconds - currentTimeInSeconds;
 
       console.log(timeDifference);
 
-      if (timeDifference <= tokenExpiryThreshold) {
+      if (timeDifference <= 21600) {
         if (timeDifference <= 0) {
           localStorage.removeItem("access_token");
           localStorage.removeItem("id_token");
           localStorage.removeItem("refresh_token");
-          dispatch(
-            setTokens({ accessToken: "", refreshToken: "", idToken: "" })
-          );
+          dispatch(setTokens({ accessToken: "", refreshToken: "", idToken: "" }));
 
           const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
           const domain = import.meta.env.VITE_COGNITO_DOMAIN;
@@ -62,18 +59,8 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
       setLoading(false);
     };
 
-    const tokenRefreshInterval = 50000; 
-
     useEffect(() => {
       checkAuth();
-
-      const tokenRefreshTimer = setInterval(() => {
-        checkAuth();
-      }, tokenRefreshInterval);
-
-      return () => {
-        clearInterval(tokenRefreshTimer);
-      };
     }, [accessToken, refreshToken, idToken, dispatch]);
 
     if (loading) {
